@@ -5,6 +5,7 @@ func RunCalculator() {
 
 	for _, taxRate := range taxRates {
 		job := NewTaxIncludedPriceJob(taxRate)
+		job.LoadData()
 		job.Process()
 	}
 }
