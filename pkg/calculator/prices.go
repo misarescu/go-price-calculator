@@ -29,6 +29,9 @@ func (job *TaxIncludedPriceJob) Process() {
 		result[fmt.Sprintf("%.2f", price)] = fmt.Sprintf("%.2f", taxIncludedPrice)
 	}
 	fmt.Printf("%v\n", result)
+	job.TaxIncludedPrices = result
+
+	filemanager.WriteJSON(fmt.Sprintf("data/result-tax-%.2f.json", job.TaxRate), job)
 }
 
 func (job *TaxIncludedPriceJob) LoadData() {
