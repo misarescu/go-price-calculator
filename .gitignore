@@ -20,3 +20,6 @@ bin/
 
 # Go workspace file
 go.work
+
+# results from running the process
+data/*.json

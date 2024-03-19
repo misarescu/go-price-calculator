@@ -1,8 +1,12 @@
+BUILD_DIR= bin
+
 build:
-	@go build -o ./bin/ ./cmd/...
+	@go build -o ./$(BUILD_DIR)/ ./cmd/...
 
-run-calculator:
-	@bin/calculator
-
-clean:
+clean-bin:
 	@rm -rf bin
+
+clean-data:
+	@rm data/result-*.json
+
+clean: clean-bin clean-data
