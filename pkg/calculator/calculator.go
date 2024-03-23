@@ -10,8 +10,10 @@ func RunCalculator() {
 	taxRates := []float64{0, 0.07, 0.1, 0.15}
 
 	for _, taxRate := range taxRates {
-		ioManager := filemanager.NewFileManager("data/prices.txt", fmt.Sprintf("data/result-tax-%.2f.json", taxRate))
+		ioManager := filemanager.NewFileManager("data1/prices.txt", fmt.Sprintf("data/result-tax-%.2f.json", taxRate))
 		job := NewTaxIncludedPriceJob(*ioManager, taxRate)
-		job.Process()
+		if err := job.Process(); err != nil {
+			fmt.Println("could not process job: ", err)
+		}
 	}
 }

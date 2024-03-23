@@ -4,15 +4,14 @@ import (
 	"fmt"
 
 	"calculator.com/pkg/conversions"
-	"calculator.com/pkg/errors"
 	"calculator.com/pkg/filemanager"
 )
 
 type TaxIncludedPriceJob struct {
-	TaxRate           float64
-	InputPrices       []float64
-	TaxIncludedPrices map[string]string
-	IOManager         filemanager.FileManager
+	TaxRate           float64                 `json:"taxRate,omitempty"`
+	InputPrices       []float64               `json:"netPrices,omitempty"`
+	TaxIncludedPrices map[string]string       `json:"grossPrices,omitempty"`
+	IOManager         filemanager.FileManager `json:"-"`
 }
 
 func NewTaxIncludedPriceJob(fm filemanager.FileManager, taxRate float64) *TaxIncludedPriceJob {
@@ -22,8 +21,12 @@ func NewTaxIncludedPriceJob(fm filemanager.FileManager, taxRate float64) *TaxInc
 	}
 }
 
-func (job *TaxIncludedPriceJob) Process() {
-	job.LoadData()
+func (job *TaxIncludedPriceJob) Process() error {
+	err := job.LoadData()
+
+	if err != nil {
+		return err
+	}
 	result := make(map[string]string)
 
 	for _, price := range job.InputPrices {
@@ -34,18 +37,23 @@ func (job *TaxIncludedPriceJob) Process() {
 	job.TaxIncludedPrices = result
 
 	job.IOManager.WriteJSON(job)
+
+	return nil
 }
 
-func (job *TaxIncludedPriceJob) LoadData() {
+func (job *TaxIncludedPriceJob) LoadData() error {
 	lines, err := job.IOManager.ReadLines()
 	if err != nil {
-		errors.ErrAndExit(err)
+		// errors.ErrAndExit(err)
+		return err
 	}
 
 	prices, err := conversions.StringsToFloats(lines)
 	if err != nil {
-		errors.ErrAndExit(err)
+		// errors.ErrAndExit(err)
+		return err
 	}
 
 	job.InputPrices = prices
+	return nil
 }
