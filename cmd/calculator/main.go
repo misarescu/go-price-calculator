@@ -8,5 +8,5 @@ import (
 
 func main() {
 	fmt.Println("Running tax calculator!")
-	calculator.RunCalculator()
+	calculator.RunCalculator("data/prices.txt")
 }
