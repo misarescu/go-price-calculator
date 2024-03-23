@@ -2,6 +2,7 @@ package calculator
 
 import (
 	"fmt"
+	"sync"
 
 	"calculator.com/pkg/conversions"
 	"calculator.com/pkg/filemanager"
@@ -21,7 +22,7 @@ func NewTaxIncludedPriceJob(fm filemanager.FileManager, taxRate float64) *TaxInc
 	}
 }
 
-func (job *TaxIncludedPriceJob) Process(done chan bool) {
+func (job *TaxIncludedPriceJob) ProcessChan(done chan bool) {
 	err := job.LoadData()
 
 	if err != nil {
@@ -38,6 +39,25 @@ func (job *TaxIncludedPriceJob) Process(done chan bool) {
 
 	job.IOManager.WriteJSON(job)
 	done <- true
+}
+
+func (job *TaxIncludedPriceJob) ProcessWG(wg *sync.WaitGroup) {
+	defer wg.Done()
+	err := job.LoadData()
+
+	if err != nil {
+		// return err
+	}
+	result := make(map[string]string)
+
+	for _, price := range job.InputPrices {
+		taxIncludedPrice := price * (1 + job.TaxRate)
+		result[fmt.Sprintf("%.2f", price)] = fmt.Sprintf("%.2f", taxIncludedPrice)
+	}
+	fmt.Printf("%v\n", result)
+	job.TaxIncludedPrices = result
+
+	job.IOManager.WriteJSON(job)
 }
 
 func (job *TaxIncludedPriceJob) LoadData() error {
