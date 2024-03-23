@@ -3,31 +3,36 @@ package calculator
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"calculator.com/pkg/filemanager"
 )
 
-func RunCalculator(filepath string) {
+func RunCalculator(filepath, outputPrefix string) {
 	taxRates := []float64{0, 0.07, 0.1, 0.15}
-	// doneChans := make([]chan bool, len(taxRates))
+	errChan := make(chan error)
 	var wg sync.WaitGroup
 
 	wg.Add(len(taxRates))
 
+	start := time.Now()
+
 	for _, taxRate := range taxRates {
-		// doneChans[idx] = make(chan bool)
-		ioManager := filemanager.NewFileManager(filepath, fmt.Sprintf("data/result-tax-%.2f.json", taxRate))
+		ioManager := filemanager.NewFileManager(filepath, fmt.Sprintf("%s%.2f.json", outputPrefix, taxRate))
 		job := NewTaxIncludedPriceJob(*ioManager, taxRate)
 
-		job.ProcessWG(&wg)
-		// if err := job.Process(); err != nil {
-		// 	fmt.Println("could not process job: ", err)
-		// }
-		// go job.ProcessChan(doneChans[idx])
+		go job.ProcessWG(&wg, errChan)
 	}
-	// for _, d := range doneChans {
-	// 	<-d
-	// }
+
+	// print the errors if they come
+	go func() {
+		for {
+			err := <-errChan
+			fmt.Println("could not process job: ", err)
+		}
+	}()
 
 	wg.Wait()
+
+	fmt.Printf("it took %s\n", time.Since(start))
 }

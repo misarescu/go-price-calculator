@@ -41,12 +41,13 @@ func (job *TaxIncludedPriceJob) ProcessChan(done chan bool) {
 	done <- true
 }
 
-func (job *TaxIncludedPriceJob) ProcessWG(wg *sync.WaitGroup) {
+func (job *TaxIncludedPriceJob) ProcessWG(wg *sync.WaitGroup, errChan chan error) {
 	defer wg.Done()
 	err := job.LoadData()
 
 	if err != nil {
-		// return err
+		errChan <- err
+		return
 	}
 	result := make(map[string]string)
 
