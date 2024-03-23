@@ -21,11 +21,11 @@ func NewTaxIncludedPriceJob(fm filemanager.FileManager, taxRate float64) *TaxInc
 	}
 }
 
-func (job *TaxIncludedPriceJob) Process() error {
+func (job *TaxIncludedPriceJob) Process(done chan bool) {
 	err := job.LoadData()
 
 	if err != nil {
-		return err
+		// return err
 	}
 	result := make(map[string]string)
 
@@ -37,8 +37,7 @@ func (job *TaxIncludedPriceJob) Process() error {
 	job.TaxIncludedPrices = result
 
 	job.IOManager.WriteJSON(job)
-
-	return nil
+	done <- true
 }
 
 func (job *TaxIncludedPriceJob) LoadData() error {
